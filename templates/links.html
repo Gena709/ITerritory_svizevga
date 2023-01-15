@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{%block title %}
+Creation of short links
+{% endblock %}
+
+
+
+{%block body %}
+
+
+<div class = "container  m-auto">
+    <h1>Creation of short links</h1>
+    <form method="post">
+        <textarea name="url" id="url" class="form-control" placeholder="Enter the url"></textarea><br>
+        <input type="submit"  class="btn btn-success" value="Make shorter"><br>
+    </form>
+</div>
+
+<div class="container">
+    {% for message in get_flashed_messages() %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+    {% block content %} {% endblock %}
+</div>
+
+
+
+<div class = "container mt-5">
+    <h1>All links</h1>
+    {% for i in data %}
+  <div class = "alert alert-warning">
+      <b>Original link:</b><a href="{{i.URL }}">{{i.URL }}</a> <br>
+      <b>Short link:</b><a href="/{{i.id}}" class="btn btn-link">{{i.Short_URL }}</a>
+      <p>Сreation date: {{ i.Date.date() }}</p>
+      <p>Clicks: {{ i.Clicks }}</p>
+  </div>
+    {%endfor%}
+</div>
+
+{% endblock %}
+
+
+
