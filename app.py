@@ -5,11 +5,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_user, login_required
 from flask_login import LoginManager
 import pyshorteners
-import requests
+from hashids import Hashids
 import urllib.request
 from datetime import datetime
 
-import webbrowser
 
 app = Flask(__name__)
 app.secret_key = "super secret key"
@@ -17,6 +16,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///base.db'
 db = SQLAlchemy(app)
 manager = LoginManager(app)
 
+hashids = Hashids(min_length=5, salt=app.config['SECRET_KEY'])
 
 with app.app_context():
     # within this block, current_app points to app.
@@ -57,7 +57,6 @@ def login_page():
         if user and user.Password == password:
             login_user(user)
 
-            name = user.get_id()
             return redirect("/link")
         else:
             flash('Login or password is not correct')
@@ -102,6 +101,7 @@ def links():
     if request.method == "POST":
         url = request.form.get('url')
 
+
         if is_valid(url):
             s = pyshorteners.Shortener().tinyurl.short(url) # создание короткой ссылки
             Short = Short_url(id_user=flask_login.current_user.id, URL=url, Short_URL = s)
@@ -119,10 +119,14 @@ def links():
 @login_required
 def url_redirect(id):
     data = Short_url.query.filter_by(id=id).first()
-    url = data.Short_URL
-    data.Clicks = data.Clicks + 1
-    db.session.commit()
-    return redirect(url)
+    if data.id_user == flask_login.current_user.id:
+        url = data.Short_URL
+        data.Clicks = data.Clicks + 1
+        db.session.commit()
+        return redirect(url)
+    else:
+        return redirect(url_for('links'))
+
 
 
 if __name__ == '__main__':
